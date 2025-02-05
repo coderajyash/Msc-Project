@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Search</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+        
+</head>
+<body>
+    <h1>Search Products</h1>
+    <form method="GET">
+        <input type="text" name="search" placeholder="Search by description" value="{{ search_query }}">
+        <button type="submit">Search</button>
+    </form>
+
+    <h2>Identified Information</h2>
+    <p><strong>Brand:</strong> {{ identified_brand if identified_brand else "Not identified" }}</p>
+    <p><strong>Category:</strong> {{ predicted_category if predicted_category else "Not predicted" }}</p>
+
+    <h2 id="simple-results">Simple Search Results</h2>
+    <div class="card-container search-section">
+        {% for product in simple_search_results %}
+        <div class="card">
+            <img src="{{ url_for('static', filename=product['image_source']) }}" alt="{{ product['description'] }}">
+            <div class="card-body">
+                <div class="card-title">{{ product['description'] }}</div>
+                <div class="card-text"><strong>Category:</strong> {{ product['category'] }}</div>
+                <div class="card-text"><strong>Brand:</strong> {{ product['brand'] }}</div>
+                <div class="card-price">${{ "%.2f" % product['price'] if product['price'] is not none else "N/A" }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% if simple_total_results > results_per_page %}
+    <p>{{ simple_total_results - results_per_page }} more results found...</p>
+    {% endif %}
+
+    {% if simple_total_results > results_per_page %}
+    <nav class="pagination-container">
+        <ul class="pagination">
+            {% for p in range(1, (simple_total_results // results_per_page) + 2) %}
+            <li {% if p == page %}class="active"{% endif %}>
+                <a href="#simple-results" onclick="fetchPage('simple', {{ p }})">{{ p }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    <h2 id="advanced-results">Advanced Search Results (with Brand and Category Filters)</h2>
+    <div class="card-container search-section">
+        {% for product in advanced_search_results %}
+        <div class="card">
+            <img src="{{ url_for('static', filename=product['image_source']) }}" alt="{{ product['description'] }}">
+            <div class="card-body">
+                <div class="card-title">{{ product['description'] }}</div>
+                <div class="card-text"><strong>Category:</strong> {{ product['category'] }}</div>
+                <div class="card-text"><strong>Brand:</strong> {{ product['brand'] }}</div>
+                <div class="card-price">${{ "%.2f" % product['price'] if product['price'] is not none else "N/A" }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% if advanced_total_results > results_per_page %}
+    <p>{{ advanced_total_results - results_per_page }} more results found...</p>
+    {% endif %}
+
+    {% if advanced_total_results > results_per_page %}
+    <nav class="pagination-container">
+        <ul class="pagination">
+            {% for p in range(1, (advanced_total_results // results_per_page) + 2) %}
+            <li {% if p == page %}class="active"{% endif %}>
+                <a href="#advanced-results" onclick="fetchPage('advanced', {{ p }})">{{ p }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    <script>
+        function fetchPage(type, page) {
+            window.location.href = `?search={{ search_query }}&type=${type}&page=${page}`;
+        }
+    </script>
+</body>
+</html>
